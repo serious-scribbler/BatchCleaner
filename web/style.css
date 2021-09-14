@@ -1,0 +1,121 @@
+html {
+    font-family: sans-serif !important;
+}
+
+.wrapper {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    height: auto;
+    background-color: #161b22;
+}
+
+.menu-bar {
+    height : 2em;
+    background-color: #0d1117;
+    color: white;
+    font-size: 1.5em;
+    font-weight: bolder;
+    width: 101%;
+}
+
+.menu-bar a{
+    color: white;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #23A2A1;
+}
+
+.menu-item {
+    text-align: center;
+    vertical-align: middle;
+    line-height: 2em;
+    height: 100%;
+    color: #23A2A1;
+}
+
+.list-item {
+    height: 1em;
+}
+
+.file-list-wrapper {
+    height: 50vh;
+}
+
+.file-list-container {
+    background-color: #0d1117;
+    border: 2px solid #23A2A1;
+    border-radius: 4px;
+    margin-top: 2em;
+    margin-bottom: 2em;
+    margin-left: auto;
+    margin-right: auto;
+    width: 75vw;
+    height: 100%;
+    display: block;
+    overflow-y: auto;
+}
+
+.file-table {
+    width: 100%;
+    color: white;
+}
+
+.file-table thead{
+    background-color: #161b22;
+    color: white;
+}
+
+.file-table th, thead, tr, td {
+    border-color: #23A2A1 !important;
+    border: 1px solid;
+}
+
+.file-table {
+    border: none;
+}
+
+.dir {
+    width: 55%;
+}
+
+.slim {
+    width: 10%;
+}
+
+.button-edit, .button-remove {
+    border-radius: 4px;
+    color: white;
+    padding: 0.5em 0.25em;
+    width: 90%;
+}
+
+.button-edit {
+    background-color: #BD7E00;
+}
+
+.button-remove {
+    background-color: #BD0000;
+}
+
+.check {
+    text-align: center;
+}
+
+input[type=checkbox]
+{
+  /* Double-sized Checkboxes */
+  -ms-transform: scale(1.5); /* IE */
+  -moz-transform: scale(1.5); /* FF */
+  -webkit-transform: scale(1.5); /* Safari and Chrome */
+  -o-transform: scale(1.5); /* Opera */
+  transform: scale(1.5);
+  padding: 8px;
+}
