@@ -1,6 +1,7 @@
 import platform
 import ctypes
 import sys
+from bottle import load
 import eel
 import os
 import random
@@ -12,6 +13,7 @@ from app.model import DirectoryListItem
 
 eel.init("web")
 
+file_sizes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
 
 def is_admin():
     try:
@@ -25,6 +27,26 @@ stats = {}
 cleaner_dir = os.path.join(os.path.abspath(Path.home()), "BatchCleaner")
 path_file = os.path.join(cleaner_dir, "paths.json")
 stats_file = os.path.join(cleaner_dir, "stats.json")
+
+
+def get_dir_size(d):
+    total_size = 0
+    for entry in os.scandir(d):
+        if entry.is_file():
+            total_size += entry.stat().st_size
+        elif entry.is_dir():
+            total_size += get_dir_size(entry.path)
+    return total_size
+
+
+def size_to_string(s):
+    size = float(s)
+    unit_counter = 0
+    while size > 1024:
+        size = size / 1024.0
+        unit_counter += 1
+    return "" + str(round(size, ndigits=2)) + " " + file_sizes[unit_counter]
+
 
 def object_to_json(obj, unpicklable=True )-> str:
     jsonpickle.set_encoder_options('json', sort_keys=True, indent=4)
@@ -67,59 +89,91 @@ def update_stats(path: str, data: int):
 
 
 def start_application():
+    load_from_disk()
     eel.start("templates/clean.htm", size=(1280, 720), jinja_templates="templates")
-    eel.say_hello()
+    
 
 
 def get_random_id():
     id = ""
     while id == "" or id in paths:
         id = "".join(random.choices(string.ascii_uppercase, k=5))
+    return id
 
 
 @eel.expose
 def change_path(id: str, path: str):
+    if path == None:
+        eel.triggerAlert(path + " is not a directory!")
+        return False
     if id not in paths:
-        pass # Call error display
+        eel.triggerAlert("This entry doesn't exist!")
+        return False
     elif os.path.isdir(path):
-        paths[id].path = path
+        try:
+            size = size_to_string(get_dir_size(path))
+            paths[id].path = path
+            eel.setSize(id, size)
+            save_paths()
+            return True
+        except:
+            eel.triggerAlert("Error: Access denied!")
+            return False
+    else:
+        eel.triggerAlert(path + " is not a directory!")
+        return True
 
 
 @eel.expose
 def add_path(path: str):
-    if os.isdir(path):
-        id = get_random_id()
-        paths[id] = DirectoryListItem(id, paths, path)
-        # TODO: Call callback
+    if path == None:
+        eel.triggerAlert(path + " is not a directory!")
+        return
+    if os.path.isdir(path):
+        try:
+            size = size_to_string(get_dir_size(path))
+            id = get_random_id()
+            paths[id] = DirectoryListItem(id, paths, path)
+            eel.addPath(id, path, paths[id].recursive, size)
+            save_paths()
+        except Exception as e:
+            eel.triggerAlert("An error occured: " + str(e))
     else:
-        pass # Call error function
+        eel.triggerAlert(path + " is not a directory!")
 
 
 @eel.expose
 def delete_path(id: str):
     if id in paths:
         del paths[id]
-        # TODO; call callback
+        save_paths()
+    else:
+        eel.triggerAlert("This entry doesn't exist!")
 
 
 @eel.expose
 def set_recursive(id: str, recursive:bool):
     if id not in paths:
-        pass # TODO: Call error callback
+        eel.triggerAlert("This entry doesn't exist!")
     else:
-        paths[id].recursive == recursive
+        paths[id].recursive = recursive
+        save_paths()
 
 
 @eel.expose
 def get_paths():
-    for p in paths:
-        pass # TODO call callback
+    for k, p in paths.items():
+        eel.addPath(p.id, p.path, p.recursive, size_to_string(get_dir_size(p.path)))
 
 
 @eel.expose
 def get_stats() -> str:
     return object_to_json(stats, unpicklable=False)
 
+
+@eel.expose
+def clean_now():
+    pass
 
 if __name__ == "__main__":
     start_application()

@@ -6,6 +6,7 @@ class DirectoryListItem():
         self.parent = parent
         self.path = path
         self.recursive = recursive
+        self.id = id
 
     def delete(self):
         self.parent
