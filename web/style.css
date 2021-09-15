@@ -24,6 +24,15 @@ body {
     width: 101%;
 }
 
+.logo {
+    max-width: 1.8em;
+    max-height: 1.8em;
+    line-height: 2em;
+    display: inline;
+    vertical-align: middle;
+    filter: drop-shadow(0 0 0.2rem rgba(255, 255, 255, 0.6));
+}
+
 .menu-bar a{
     color: white;
     text-decoration: none;
@@ -157,6 +166,13 @@ a:hover {
 
 .centered {
     text-align: center;
+}
+
+.centered-div {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    text-align: center;
+    width: 100%;
 }
 
 .log-entry {

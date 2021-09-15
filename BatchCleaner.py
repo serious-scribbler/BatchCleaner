@@ -15,13 +15,6 @@ from app.model import DirectoryListItem
 eel.init("web")
 
 file_sizes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
-
-def is_admin():
-    try:
-        return ctypes.windll.shell32.IsUserAnAdmin()
-    except:
-        return False
-
 paths = {}
 stats = {"total": 0, "individual": {}}
 
@@ -235,17 +228,27 @@ def open_repo():
     eel.spawn(_open_repo_in_browser)
 
 
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
+
+
 if __name__ == "__main__":
-    start_application()
-    exit(0)
     if platform.system() == "Windows":
-        print(sys.argv)
+        import pyi_splash
+        pyi_splash.close()
         if not is_admin():
+            print(sys.executable)
             args = " ".join(sys.argv if "python" in sys.executable else sys.argv[1:])
-            print(args)
-            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+            ret = ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, args, os.path.abspath("."), 1)
+            if ret < 32:
+                print("Unable to run with elevated priviledges: " + str(ctypes.WinError(ret)))
+                print("Launching without elevated priviledges.")
+                start_application()
+
         else:
-            print("yar")
             start_application()
     else:
         start_application()
