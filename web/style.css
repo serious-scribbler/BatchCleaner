@@ -1,0 +1,260 @@
+html {
+    font-family: sans-serif !important;
+}
+
+.wrapper {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    height: auto;
+    background-color: #161b22;
+}
+
+.menu-bar {
+    height : 2em;
+    background-color: #0d1117;
+    color: white;
+    font-size: 1.5em;
+    font-weight: bolder;
+    width: 101%;
+}
+
+.logo {
+    max-width: 1.8em;
+    max-height: 1.8em;
+    line-height: 2em;
+    display: inline;
+    vertical-align: middle;
+    filter: drop-shadow(0 0 0.2rem rgba(255, 255, 255, 0.6));
+}
+
+.menu-bar a{
+    color: white;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #23A2A1;
+}
+
+.menu-item {
+    text-align: center;
+    vertical-align: middle;
+    line-height: 2em;
+    height: 100%;
+    color: #23A2A1;
+}
+
+.list-item {
+    height: 1em;
+}
+
+.file-list-wrapper {
+    height: 50vh;
+}
+
+.stats-wrapper {
+    width: 66vw;
+    height: 60wh;
+    margin-left: auto;
+    margin-right: auto;
+    color: white !important;
+}
+
+.file-list-container {
+    background-color: #0d1117;
+    border: 2px solid #23A2A1;
+    border-radius: 4px;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: auto;
+    margin-right: auto;
+    width: 90vw;
+    height: 100%;
+    display: block;
+    overflow-y: auto;
+}
+
+.log-box {
+    background-color: #0d1117;
+    border: 2px solid #23A2A1;
+    border-radius: 4px;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: auto;
+    margin-right: auto;
+    width: 90vw;
+    height: 20vh;
+    display: block;
+    overflow-y: auto;
+    overflow-x: auto;
+    padding: 0.1em;
+}
+
+.file-table {
+    width: 100%;
+    color: white;
+}
+
+.text-white {
+    color: white !important;
+}
+
+.text-green {
+    color: #009700 !important;
+}
+
+.text-red {
+    color: #BD0000 !important;
+}
+
+.text-orange {
+    color: #BD7E00 !important;
+}
+
+.text-blue {
+    color: #23A2A1 !important;
+}
+
+.file-table thead{
+    background-color: #161b22;
+    color: white;
+}
+
+.file-table th, thead, tr, td {
+    border-color: #23A2A1 !important;
+    border: 1px solid;
+}
+
+.file-table {
+    border: none;
+}
+
+.dir {
+    width: 55%;
+}
+
+.slim {
+    width: 10%;
+}
+
+.button-edit, .button-remove, .button-green{
+    border-radius: 4px;
+    color: white;
+    padding: 0.5em 0.25em;
+    display: inline;
+    min-width: 5em;
+}
+
+.button-edit {
+    background-color: #BD7E00;
+}
+
+.button-remove {
+    background-color: #BD0000;
+}
+
+.button-green {
+    background-color: #009700;
+    margin-top: 2.25em;
+}
+
+.centered {
+    text-align: center;
+}
+
+.centered-div {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    text-align: center;
+    width: 100%;
+}
+
+.log-entry {
+    font-size: 0.9em;
+    color: white;
+    padding: 0.1em;
+    width: 98%;
+}
+
+input[type=checkbox]
+{
+  /* Double-sized Checkboxes */
+  -ms-transform: scale(1.5); /* IE */
+  -moz-transform: scale(1.5); /* FF */
+  -webkit-transform: scale(1.5); /* Safari and Chrome */
+  -o-transform: scale(1.5); /* Opera */
+  transform: scale(1.5);
+  padding: 8px;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 75vh;
+    z-index: 2;
+    background-color: rgba(128, 128, 128, 0.5);
+    color: white;
+}
+
+.overlay-dark {
+    background-color: rgba(0, 0, 0, 0.75) !important;
+    height: 100vh !important;
+}
+
+.overlay-dark input[type=text] {
+    width: 50vw;
+    height: 2em;
+    font-size: 1.5em;
+}
+
+h2 {
+    font-size: 3em;
+}
+
+.input-blocker {
+    font-size: 4em;
+    line-height: 75vh;
+    vertical-align: middle;
+    text-align: center;
+}
+
+/* width */
+::-webkit-scrollbar {
+    width: 0.3em;
+  }
+  
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #23A2A1;
+  }
+  
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #23A2A1;
+  }
+
+  .total-stats {
+    margin-top: -1em;
+    font-size: 1.5em;
+  }
+
+  .footer {
+      color: white;
+  }
+
+  .footer button {
+      margin-top: 0.5em !important;
+  }

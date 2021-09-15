@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    
+    <link rel="stylesheet" href="/purecss/base.css">
+	<link rel="stylesheet" href="/purecss/pure.css">
+	<link rel="stylesheet" href="/purecss/grids-responsive.css">
+    <link rel="stylesheet" href="/style.css">
+    
+    <!-- ****** faviconit.com Favicons ****** -->
+	<link rel="shortcut icon" href="/favicon.ico">
+	<link rel="icon" sizes="16x16 32x32 64x64" href="/favicon.ico">
+	<link rel="icon" type="image/png" sizes="196x196" href="/favicon-192.png">
+	<link rel="icon" type="image/png" sizes="160x160" href="/favicon-160.png">
+	<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png">
+	<link rel="icon" type="image/png" sizes="64x64" href="/favicon-64.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+	<link rel="apple-touch-icon" href="/favicon-57.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="/favicon-114.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="/favicon-72.png">
+	<link rel="apple-touch-icon" sizes="144x144" href="/favicon-144.png">
+	<link rel="apple-touch-icon" sizes="60x60" href="/favicon-60.png">
+	<link rel="apple-touch-icon" sizes="120x120" href="/favicon-120.png">
+	<link rel="apple-touch-icon" sizes="76x76" href="/favicon-76.png">
+	<link rel="apple-touch-icon" sizes="152x152" href="/favicon-152.png">
+	<link rel="apple-touch-icon" sizes="180x180" href="/favicon-180.png">
+	<meta name="msapplication-TileColor" content="#FFFFFF">
+	<meta name="msapplication-TileImage" content="/favicon-144.png">
+	<meta name="msapplication-config" content="/browserconfig.xml">
+	<!-- ****** faviconit.com Favicons ****** -->
+
+    <title>{% block title %}{% endblock %} - BatchCleaner</title>
+    <script type="text/javascript" src="/eel.js"></script>
+
+    <script id="path-template" type="text/html">
+        <td id="path-{ID}">{PATH}</td>
+        <td id="size-{ID}">{SIZE}</td>
+        <td class="centered"><input id="recursive-{ID}" type="checkbox" checked onclick="toggleRecursive('{ID}')"/></td>
+        <td>
+            <div class="pure-g">
+                <div class="pure-u-1-2 centered"><button class="pure-button button-edit" onclick="editPath('{ID}')">Edit</button></div>
+                <div class="pure-u-1-2 centered"><button class="pure-button button-remove" onclick="removePath('{ID}')">Remove</button></div>
+            </div>                        
+        </td>
+    </script>
+
+    <script id="log-template" type="text/html"><b>{TIME}</b>: <span class="text-{COLOR-CLASS}">{TEXT}</span></script>
+    <script id="add-edit-template" type="text/html">
+        <div class="pure-u-1-1 centered" style="margin-top: 4em;"><h2>{TYPE} Entry</h2></div>
+        <div class="pure-u-1-1 centered"><input type="text" id="edit-txt" placeholder="Absolute path of the directory:"></div>
+        <div class="pure-u-1-1 centered"><button class="pure-button button-green" onclick="overlayFinished()">Submit</button></div>
+    </script>
+
+    <script id="info-overlay-template" type="text/html">
+        <div class="pure-u-1-1 centered text-{COLOR}" style="margin-top: 4em;"><h2>{HEADING}</h2></div>
+        <div class="pure-u-1-1 centered">{TEXT}</div>
+        <div class="pure-u-1-1 centered"><button class="pure-button button-green" onclick="closeInfo()">Dismiss</button></div>
+    </script>
+
+    <script type="text/javascript">
+        var mode = "Add";
+        var target = "";
+        var overlay = null;
+
+        eel.expose(addPath);
+        eel.expose(triggerAlert);
+        eel.expose(setSize);
+        eel.expose(logText);
+        eel.expose(disableInput);
+        eel.expose(enableInput);
+        eel.expose(success);
+
+        function success(deleteSizeStr) {
+            displayInfoOverlay("Successfully deleted " + deleteSizeStr, "Task finished", "green");
+            var audio = new Audio("/audio/CalmNotification.wav");
+            audio.play();
+        }
+
+
+        async function requestStats() {
+            var stats = await eel.get_stats()();
+            console.log(stats);
+            document.getElementById("total").innerHTML = stats[0];
+            drawChart(stats[1], stats[2].map(String));
+        }
+
+
+        async function drawChart(x, y) {
+            var data = [{
+                values: y,
+                labels: x,
+                type: "pie",
+                hovertemplate: "<b>%{label}</b><br>" + "%{value} MB<br>" + "%{percent}" + "<extra></extra>"
+            }];
+
+            var layout = {
+                title: "MB deleted per directory",
+                font: {
+                    size: 18,
+                    color: "white",
+                },
+                paper_bgcolor: "rgba(0,0,0,0)",
+                plot_bgcolor: "rgba(0,0,0,0)",
+                showlegend: false,
+            };
+            console.log(data);
+            var config = {responsive: true};
+            await Plotly.newPlot("pieChart", data, layout, config)
+        }
+
+
+        function overlayFinished() {
+            var dir = document.getElementById("edit-txt").value;
+            if(mode == "Add") {
+                eel.add_path(dir);
+                overlay.parentElement.removeChild(overlay);
+            } else {
+                var p = document.getElementById("path-" + target);
+                status = eel.change_path(target, dir);
+                if(status) {
+                    p.innerHTML = dir;
+                }
+                overlay.parentElement.removeChild(overlay);
+            }
+        }
+
+
+        function closeInfo() {
+            var e = document.getElementById("info-overlay");
+            e.parentElement.removeChild(e);
+        }
+
+
+        function displayInfoOverlay(text, heading, color) {
+            var errorOverlay = document.createElement("div");
+            errorOverlay.classList.add("overlay");
+            errorOverlay.classList.add("overlay-dark");
+            errorOverlay.classList.add("pure-g");
+            errorOverlay.id = "info-overlay";
+            errorOverlay.innerHTML = document.getElementById("info-overlay-template").innerHTML.replaceAll("{TEXT}", text).replaceAll("{HEADING}", heading).replaceAll("{COLOR}", color);
+            document.body.appendChild(errorOverlay);
+            if(heading == "Error") {
+                new Audio("/audio/Error.wav").play();
+            }
+        }
+
+
+        function displayEditOverlay(overlay_mode, target_id) {
+            overlay = document.createElement("div");
+            overlay.classList.add("overlay");
+            overlay.classList.add("overlay-dark");
+            overlay.classList.add("pure-g");
+
+            overlay.innerHTML = document.getElementById("add-edit-template").innerHTML.replaceAll("{TYPE}", overlay_mode);
+            target = target_id;
+            mode = overlay_mode;
+
+            document.body.appendChild(overlay);
+            var textField = document.getElementById("edit-txt");
+            textField.focus();
+            textField.getElementById(textField).select();
+        }
+
+
+        function disableInput() {
+            var blocker = document.createElement("div");
+            blocker.classList.add("overlay input-blocker");
+            blocker.classList.add("input-blocker");
+            blocker.id = "input-blocker";
+            blocker.innerHTML = "Deletion in progress, please wait...";
+            document.body.appendChild(blocker);
+        }
+
+
+        function enableInput() {
+            var blocker = document.getElementById("input-blocker");
+            document.body.removeChild(blocker);
+        }
+
+
+        function triggerAlert(e, heading, headingColor) {
+            displayInfoOverlay(e, heading, headingColor);
+        }
+
+
+        function addLeadingZero(t) {
+            return ("0" + t).slice(-2);
+        }
+
+
+        function getTimeStr() {
+            var today = new Date();
+            return addLeadingZero(today.getHours()) + ":" + addLeadingZero(today.getMinutes()) + ":" + addLeadingZero(today.getSeconds());
+        }
+
+
+        function logText(t, color) {
+            var logEntry = document.createElement("div");
+            t = t.replaceAll("\n", "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...")
+            logEntry.classList.add("pure-u-1-1")
+            logEntry.classList.add("log-entry")
+            logEntry.innerHTML = document.getElementById("log-template").innerHTML.replaceAll("{TIME}", getTimeStr()).replaceAll("{TEXT}", t).replaceAll("{COLOR-CLASS}", color)
+            var logBox = document.getElementById("log-box");
+            logBox.appendChild(logEntry);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+
+        function toggleRecursive(id) {
+            eel.set_recursive(id, document.getElementById("recursive-" + id).checked)
+        }
+
+
+        function addPath(id, path, recursive, sizestr) {
+            var newRow = document.createElement("tr")
+            newRow.id = id;
+            newRow.innerHTML = document.getElementById("path-template").innerHTML.replaceAll("{ID}", id).replaceAll("{PATH}", path).replaceAll("{SIZE}", sizestr);
+            var tbod = document.getElementById("file-table-body");
+            tbod.appendChild(newRow);
+            document.getElementById("recursive-" + id).checked = Boolean(recursive);
+            tbod.parentElement.scrollTop = tbod.parentElement.scrollHeight;
+        }
+
+
+        function setSize(id, size) {
+            document.getElementById("size-" + id).innerHTML = size
+        }
+
+
+        function removePath(id) {
+            var p = document.getElementById(id);
+            if(p != null){
+                document.getElementById("file-table-body").removeChild(p);
+                eel.delete_path(id);
+            }
+        }
+
+
+        function editPath(id) {
+            displayEditOverlay("Edit", id);
+        }
+
+
+        function openFileInput() {
+            var input = document.createElement("input");
+            input.type = "file";
+            input.webkitdirectory = true;
+            input.directory = true;
+            input.onchange = e => {
+                var file = e.target.files[0];
+                console.log(file);
+                return file;
+            }
+            input.click();
+        }
+
+
+        function newPath() {
+            displayEditOverlay("Add", "");
+        }
+
+
+        function callClean() {
+            eel.clean_now()
+        }
+    </script>
+</head>
+<body>
+    <div class="pure-g wrapper">
+        <div class="pure-u-1-1 pure-g menu-bar">
+            <div class="pure-u-1-3 menu-item" onclick="eel.open_repo()"><img class="logo" src="/white.png" alt="BatchCleanerLogo" /> BatchCleaner</div><!--
+            --><div class="pure-u-1-3 menu-item"><a href="/templates/clean.htm">&#128465; Delete Files</a></div><!--
+            --><div class="pure-u-1-3 menu-item"><a href="/templates/stats.htm">&#128202; Stats</a></div>
+        </div>
+        {% block content %}{% endblock %}
+    </div>
+    <script type="text/javascript" src="/plotly-latest.min.js"></script>
+</body>
+</html>
