@@ -4,8 +4,13 @@ Paths only need to be added once and will stay saved for the next time BatchClea
 
 ## Screenshots
 
-## How to use BatchCleaner
+### The main screen for adding directories and deleting the contained files
+![Deletion screen](/screenshots/BeforeDeletion.png?raw=true "The deletion screen")
 
+### The statistics screen that provides an insight into which directories are responsible for most of the deleted data
+![Stats](/screenshots/Stats.png?raw=true "Stats")
+
+## How to use BatchCleaner
 ### Windows standalone exe
 Download and run the .exe provided under the releases tab, add your directories and press the delete button.
 
