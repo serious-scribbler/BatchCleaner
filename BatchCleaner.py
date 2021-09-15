@@ -237,8 +237,9 @@ def is_admin():
 
 if __name__ == "__main__":
     if platform.system() == "Windows":
-        import pyi_splash
-        pyi_splash.close()
+        if "python" not in sys.executable:
+            import pyi_splash
+            pyi_splash.close()
         if not is_admin():
             print(sys.executable)
             args = " ".join(sys.argv if "python" in sys.executable else sys.argv[1:])
