@@ -171,9 +171,56 @@ def get_stats() -> str:
     return object_to_json(stats, unpicklable=False)
 
 
+"""
+Returns size of deleted file
+"""
+def delete_file(path:str) -> int:
+    try:
+        size = Path(path).stat().st_size
+        os.remove(path)
+        return size
+    except Exception as e:
+        eel.logText("Unable to delete " + path + " - " + str(e), "red")
+        return 0
+
+"""
+Returns the total size of all deleted files
+"""
+def clean_dir(path:str, recursive:bool) -> int:
+    deleted_size = 0
+    eel.logText("Processing " + path, "white")
+    for entry in os.scandir(path):
+        if entry.is_file():
+            deleted_size += delete_file(entry.path)
+        elif recursive and entry.is_dir():
+            deleted_size += clean_dir(entry.path, recursive=recursive)
+            try:
+                os.rmdir(entry.path)
+            except Exception as e:
+                eel.logText("Unable to delete directory " + entry.path + " - " + str(e), "orange")
+    return deleted_size
+
+
+def _run_cleaner():
+    eel.disableInput()
+    eel.logText("Starting cleaning process...", "blue")
+    total_size = 0
+    for id, path_obj in paths.items():
+        size = clean_dir(path_obj.path, path_obj.recursive)
+        size_str = size_to_string(size)
+        total_size += size
+        # TODO: write stats
+        eel.logText("Deleted " + size_str + " from " + path_obj.path)
+        eel.setSize(id, size_to_string(get_dir_size(path_obj.path)))
+    eel.logText("Successfully deleted a total of " + size_to_string(total_size), "green")
+    eel.logText("Done")
+    eel.enableInput()
+
+
+
 @eel.expose
 def clean_now():
-    pass
+    eel.spawn(_run_cleaner)
 
 if __name__ == "__main__":
     start_application()

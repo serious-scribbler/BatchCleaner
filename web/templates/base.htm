@@ -22,27 +22,94 @@
         </td>
     </script>
 
-    <script id="log-template" type="text/html"><b>{TIME}</b>: {TEXT}</script>
+    <script id="log-template" type="text/html"><b>{TIME}</b>: <span class="text-{COLOR-CLASS}">{TEXT}</span></script>
+    <script id="add-edit-template" type="text/html">
+        <div class="pure-u-1-1 centered"><h2>{TYPE} Entry</h2></div>
+        <div class="pure-u-1-1 centered"><input type="text" id="edit-txt" placeholder="Absolute path of the directory:"></div>
+        <div class="pure-u-1-1 centered"><button class="pure-button button-green" onclick="overlayFinished()">Submit</button></div>
+    </script>
+
     <script type="text/javascript">
+        var mode = "Add";
+        var target = "";
+        var overlay = null;
+
         eel.expose(addPath);
         eel.expose(triggerAlert)
         eel.expose(setSize)
+        eel.expose(logText)
+        eel.expose(disableInput)
+        eel.expose(enableInput)
+
+
+        function overlayFinished() {
+            var dir = document.getElementById("edit-txt").value;
+            if(mode == "Add") {
+                eel.add_path(dir);
+                overlay.parentElement.removeChild(overlay);
+            } else {
+                var p = document.getElementById("path-" + target);
+                status = eel.change_path(target, dir);
+                if(status) {
+                    p.innerHTML = dir;
+                }
+                overlay.parentElement.removeChild(overlay);
+            }
+        }
+
+
+        function displayEditOverlay(type, t) {
+            overlay = document.createElement("div");
+            overlay.classList.add("overlay");
+            overlay.classList.add("pure-g");
+
+            overlay.innerHTML = document.getElementById("add-edit-template").innerHTML.replaceAll("{TYPE}", type);
+            target = t;
+            mode = type;
+
+            document.body.appendChild(overlay);
+        }
+
+
+        function disableInput() {
+            var blocker = document.createElement("div");
+            blocker.classList.add("overlay input-blocker");
+            blocker.classList.add("input-blocker");
+            blocker.id = "input-blocker";
+            blocker.innerHTML = "Deletion in progress, please wait...";
+            document.body.appendChild(blocker);
+        }
+
+
+        function enableInput() {
+            var blocker = document.getElementById("input-blocker");
+            document.body.removeChild(blocker);
+        }
+
 
         function triggerAlert(e) {
             alert(e);
         }
 
-        function getTimeStr() {
-            var today = new Date();
-            return today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+
+        function addLeadingZero(t) {
+            return ("0" + t).slice(-2);
         }
 
-        function logText(t) {
+        function getTimeStr() {
+            var today = new Date();
+            return addLeadingZero(today.getHours()) + ":" + addLeadingZero(today.getMinutes()) + ":" + addLeadingZero(today.getSeconds());
+        }
+
+        function logText(t, color) {
             var logEntry = document.createElement("div");
+            t = t.replaceAll("\n", "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...")
             logEntry.classList.add("pure-u-1-1")
             logEntry.classList.add("log-entry")
-            logEntry.innerHTML = document.getElementById("log-template").innerHTML.replaceAll("{TIME}", getTimeStr()).replaceAll("{TEXT}", t)
-            document.getElementById("log-box").appendChild(logEntry);
+            logEntry.innerHTML = document.getElementById("log-template").innerHTML.replaceAll("{TIME}", getTimeStr()).replaceAll("{TEXT}", t).replaceAll("{COLOR-CLASS}", color)
+            var logBox = document.getElementById("log-box");
+            logBox.appendChild(logEntry);
+            logBox.scrollTop = logBox.scrollHeight;
         }
 
 
@@ -55,8 +122,10 @@
             var newRow = document.createElement("tr")
             newRow.id = id;
             newRow.innerHTML = document.getElementById("path-template").innerHTML.replaceAll("{ID}", id).replaceAll("{PATH}", path).replaceAll("{SIZE}", sizestr);
-            document.getElementById("file-table-body").appendChild(newRow);
+            var tbod = document.getElementById("file-table-body");
+            tbod.appendChild(newRow);
             document.getElementById("recursive-" + id).checked = Boolean(recursive);
+            tbod.parentElement.scrollTop = tbod.parentElement.scrollHeight;
         }
 
         function setSize(id, size) {

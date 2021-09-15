@@ -53,8 +53,8 @@ a:hover {
     background-color: #0d1117;
     border: 2px solid #23A2A1;
     border-radius: 4px;
-    margin-top: 2em;
-    margin-bottom: 2em;
+    margin-top: 1em;
+    margin-bottom: 1em;
     margin-left: auto;
     margin-right: auto;
     width: 90vw;
@@ -75,11 +75,33 @@ a:hover {
     height: 20vh;
     display: block;
     overflow-y: auto;
+    overflow-x: auto;
+    padding: 0.1em;
 }
 
 .file-table {
     width: 100%;
     color: white;
+}
+
+.text-white {
+    color: white !important;
+}
+
+.text-green {
+    color: #009700 !important;
+}
+
+.text-red {
+    color: #BD0000 !important;
+}
+
+.text-orange {
+    color: #BD7E00 !important;
+}
+
+.text-blue {
+    color: #23A2A1 !important;
 }
 
 .file-table thead{
@@ -122,7 +144,7 @@ a:hover {
 
 .button-green {
     background-color: #009700;
-    margin-top: 4.25em;
+    margin-top: 2.25em;
 }
 
 .centered {
@@ -130,7 +152,10 @@ a:hover {
 }
 
 .log-entry {
-    font-size: 0.5em;
+    font-size: 0.9em;
+    color: white;
+    padding: 0.1em;
+    width: 98%;
 }
 
 input[type=checkbox]
@@ -143,3 +168,41 @@ input[type=checkbox]
   transform: scale(1.5);
   padding: 8px;
 }
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 75vh;
+    z-index: 2;
+    background-color: rgba(128, 128, 128, 0.5);
+    color: white;
+}
+
+.input-blocker {
+    font-size: 4em;
+    line-height: 75vh;
+    vertical-align: middle;
+    text-align: center;
+}
+
+/* width */
+::-webkit-scrollbar {
+    width: 0.3em;
+  }
+  
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #23A2A1;
+  }
+  
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #23A2A1;
+  }
