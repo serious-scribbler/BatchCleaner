@@ -24,9 +24,15 @@
 
     <script id="log-template" type="text/html"><b>{TIME}</b>: <span class="text-{COLOR-CLASS}">{TEXT}</span></script>
     <script id="add-edit-template" type="text/html">
-        <div class="pure-u-1-1 centered"><h2>{TYPE} Entry</h2></div>
+        <div class="pure-u-1-1 centered" style="margin-top: 4em;"><h2>{TYPE} Entry</h2></div>
         <div class="pure-u-1-1 centered"><input type="text" id="edit-txt" placeholder="Absolute path of the directory:"></div>
         <div class="pure-u-1-1 centered"><button class="pure-button button-green" onclick="overlayFinished()">Submit</button></div>
+    </script>
+
+    <script id="error-overlay-template" type="text/html">
+        <div class="pure-u-1-1 centered text-red" style="margin-top: 4em;"><h2>Warning / Error</h2></div>
+        <div class="pure-u-1-1 centered">{TEXT}</div>
+        <div class="pure-u-1-1 centered"><button class="pure-button button-green" onclick="closeError()">Dismiss</button></div>
     </script>
 
     <script type="text/javascript">
@@ -58,14 +64,33 @@
         }
 
 
-        function displayEditOverlay(type, t) {
+        function closeError() {
+            var e = document.getElementById("error-overlay");
+            e.parentElement.removeChild(e);
+        }
+
+
+        function displayErrorOverlay(text) {
+            var errorOverlay = document.createElement("div");
+            errorOverlay.classList.add("overlay");
+            errorOverlay.classList.add("overlay-dark");
+            errorOverlay.classList.add("pure-g");
+            errorOverlay.id = "error-overlay";
+            errorOverlay.innerHTML = document.getElementById("error-overlay-template").innerHTML.replaceAll("{TEXT}", text);
+
+            document.body.appendChild(errorOverlay);
+        }
+
+
+        function displayEditOverlay(overlay_mode, target_id) {
             overlay = document.createElement("div");
             overlay.classList.add("overlay");
+            overlay.classList.add("overlay-dark");
             overlay.classList.add("pure-g");
 
-            overlay.innerHTML = document.getElementById("add-edit-template").innerHTML.replaceAll("{TYPE}", type);
-            target = t;
-            mode = type;
+            overlay.innerHTML = document.getElementById("add-edit-template").innerHTML.replaceAll("{TYPE}", overlay_mode);
+            target = target_id;
+            mode = overlay_mode;
 
             document.body.appendChild(overlay);
         }
@@ -88,7 +113,7 @@
 
 
         function triggerAlert(e) {
-            alert(e);
+            displayErrorOverlay(e);
         }
 
 
@@ -96,10 +121,12 @@
             return ("0" + t).slice(-2);
         }
 
+
         function getTimeStr() {
             var today = new Date();
             return addLeadingZero(today.getHours()) + ":" + addLeadingZero(today.getMinutes()) + ":" + addLeadingZero(today.getSeconds());
         }
+
 
         function logText(t, color) {
             var logEntry = document.createElement("div");
@@ -128,9 +155,11 @@
             tbod.parentElement.scrollTop = tbod.parentElement.scrollHeight;
         }
 
+
         function setSize(id, size) {
             document.getElementById("size-" + id).innerHTML = size
         }
+
 
         function removePath(id) {
             var p = document.getElementById(id);
@@ -140,14 +169,11 @@
             }
         }
 
+
         function editPath(id) {
-            var p = document.getElementById("path-" + id);
-            var dir = prompt("Enter the absolute path of the directory:", p.innerHTML);
-            status = eel.change_path(id, dir);
-            if(status) {
-                p.innerHTML = dir;
-            }
+            displayEditOverlay("Edit", id);
         }
+
 
         function openFileInput() {
             var input = document.createElement("input");
@@ -162,15 +188,15 @@
             input.click();
         }
 
+
         function newPath() {
-            var dir = prompt("Enter the absolute path of the directory:", "");
-            eel.add_path(dir);
+            displayEditOverlay("Add", "");
         }
+
 
         function callClean() {
             eel.clean_now()
         }
-
     </script>
 </head>
 <body>
