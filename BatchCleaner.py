@@ -7,6 +7,7 @@ import os
 import random
 import string
 import jsonpickle
+import webbrowser
 from pathlib import Path
 
 from app.model import DirectoryListItem
@@ -22,9 +23,9 @@ def is_admin():
         return False
 
 paths = {}
-stats = {}
+stats = {"total": 0, "individual": {}}
 
-cleaner_dir = os.path.join(os.path.abspath(Path.home()), "BatchCleaner")
+cleaner_dir = os.path.join(os.path.abspath(Path.home()), ".BatchCleaner")
 path_file = os.path.join(cleaner_dir, "paths.json")
 stats_file = os.path.join(cleaner_dir, "stats.json")
 
@@ -81,11 +82,11 @@ def save_stats():
     object_to_json_file(stats, stats_file)
 
 
-def update_stats(path: str, data: int):
-    if path not in stats:
-        stats[path] = data
+def update_stats(path: str, data: float):
+    if path not in stats["individual"]:
+        stats["individual"][path] = round(data, ndigits=2)
     else:
-        stats[path] += data
+        stats["individual"][path] += round(data, ndigits=2)
 
 
 def start_application():
@@ -104,10 +105,10 @@ def get_random_id():
 @eel.expose
 def change_path(id: str, path: str):
     if path == None:
-        eel.triggerAlert(path + " is not a directory!")
+        eel.triggerAlert(path + " is not a directory!", "Error", "red")
         return False
     if id not in paths:
-        eel.triggerAlert("This entry doesn't exist!")
+        eel.triggerAlert("This entry doesn't exist!", "Error", "red")
         return False
     elif os.path.isdir(path):
         try:
@@ -117,17 +118,17 @@ def change_path(id: str, path: str):
             save_paths()
             return True
         except:
-            eel.triggerAlert("Error: Access denied!")
+            eel.triggerAlert("Access denied!", "Error", "red")
             return False
     else:
-        eel.triggerAlert(path + " is not a directory!")
+        eel.triggerAlert(path + " is not a directory!", "Error", "red")
         return True
 
 
 @eel.expose
 def add_path(path: str):
     if path == None:
-        eel.triggerAlert(path + " is not a directory!")
+        eel.triggerAlert(path + " is not a directory!", "Error", "red")
         return
     if os.path.isdir(path):
         try:
@@ -137,9 +138,9 @@ def add_path(path: str):
             eel.addPath(id, path, paths[id].recursive, size)
             save_paths()
         except Exception as e:
-            eel.triggerAlert("An error occured: " + str(e))
+            eel.triggerAlert(str(e), "Error", "red")
     else:
-        eel.triggerAlert(path + " is not a directory!")
+        eel.triggerAlert(path + " is not a directory!", "Error", "red")
 
 
 @eel.expose
@@ -148,13 +149,13 @@ def delete_path(id: str):
         del paths[id]
         save_paths()
     else:
-        eel.triggerAlert("This entry doesn't exist!")
+        eel.triggerAlert("This entry doesn't exist!", "Error", "red")
 
 
 @eel.expose
 def set_recursive(id: str, recursive:bool):
     if id not in paths:
-        eel.triggerAlert("This entry doesn't exist!")
+        eel.triggerAlert("This entry doesn't exist!", "Error", "red")
     else:
         paths[id].recursive = recursive
         save_paths()
@@ -167,8 +168,8 @@ def get_paths():
 
 
 @eel.expose
-def get_stats() -> str:
-    return object_to_json(stats, unpicklable=False)
+def get_stats():
+    return [size_to_string(stats["total"]), list(stats["individual"].keys()), list(stats["individual"].values())]
 
 
 """
@@ -209,18 +210,30 @@ def _run_cleaner():
         size = clean_dir(path_obj.path, path_obj.recursive)
         size_str = size_to_string(size)
         total_size += size
-        # TODO: write stats
+        update_stats(path_obj.path, int(size)/(1024*1024)) # Converting to MB
         eel.logText("Deleted " + size_str + " from " + path_obj.path)
         eel.setSize(id, size_to_string(get_dir_size(path_obj.path)))
     eel.logText("Successfully deleted a total of " + size_to_string(total_size), "green")
     eel.logText("Done")
     eel.enableInput()
+    eel.success(size_to_string(total_size))
+    stats["total"] += total_size
+    save_stats()
 
+
+def _open_repo_in_browser():
+    webbrowser.open("https://github.com/serious-scribbler/BatchCleaner/", new=1)
 
 
 @eel.expose
 def clean_now():
     eel.spawn(_run_cleaner)
+
+
+@eel.expose
+def open_repo():
+    eel.spawn(_open_repo_in_browser)
+
 
 if __name__ == "__main__":
     start_application()

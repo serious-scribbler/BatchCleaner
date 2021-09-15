@@ -49,6 +49,14 @@ a:hover {
     height: 50vh;
 }
 
+.stats-wrapper {
+    width: 66vw;
+    height: 60wh;
+    margin-left: auto;
+    margin-right: auto;
+    color: white !important;
+}
+
 .file-list-container {
     background-color: #0d1117;
     border: 2px solid #23A2A1;
@@ -188,11 +196,10 @@ input[type=checkbox]
 .overlay-dark input[type=text] {
     width: 50vw;
     height: 2em;
-    color: #23A2A1;
     font-size: 1.5em;
 }
 
-.overlay-dark h2 {
+h2 {
     font-size: 3em;
 }
 
@@ -221,4 +228,17 @@ input[type=checkbox]
   /* Handle on hover */
   ::-webkit-scrollbar-thumb:hover {
     background: #23A2A1;
+  }
+
+  .total-stats {
+    margin-top: -1em;
+    font-size: 1.5em;
+  }
+
+  .footer {
+      color: white;
+  }
+
+  .footer button {
+      margin-top: 0.5em !important;
   }

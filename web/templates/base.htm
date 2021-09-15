@@ -29,10 +29,10 @@
         <div class="pure-u-1-1 centered"><button class="pure-button button-green" onclick="overlayFinished()">Submit</button></div>
     </script>
 
-    <script id="error-overlay-template" type="text/html">
-        <div class="pure-u-1-1 centered text-red" style="margin-top: 4em;"><h2>Warning / Error</h2></div>
+    <script id="info-overlay-template" type="text/html">
+        <div class="pure-u-1-1 centered text-{COLOR}" style="margin-top: 4em;"><h2>{HEADING}</h2></div>
         <div class="pure-u-1-1 centered">{TEXT}</div>
-        <div class="pure-u-1-1 centered"><button class="pure-button button-green" onclick="closeError()">Dismiss</button></div>
+        <div class="pure-u-1-1 centered"><button class="pure-button button-green" onclick="closeInfo()">Dismiss</button></div>
     </script>
 
     <script type="text/javascript">
@@ -41,11 +41,49 @@
         var overlay = null;
 
         eel.expose(addPath);
-        eel.expose(triggerAlert)
-        eel.expose(setSize)
-        eel.expose(logText)
-        eel.expose(disableInput)
-        eel.expose(enableInput)
+        eel.expose(triggerAlert);
+        eel.expose(setSize);
+        eel.expose(logText);
+        eel.expose(disableInput);
+        eel.expose(enableInput);
+        eel.expose(success);
+
+        function success(deleteSizeStr) {
+            displayInfoOverlay("Successfully deleted " + deleteSizeStr, "Task finished", "green");
+            var audio = new Audio("/audio/CalmNotification.wav");
+            audio.play();
+        }
+
+
+        async function requestStats() {
+            var stats = await eel.get_stats()();
+            console.log(stats);
+            document.getElementById("total").innerHTML = stats[0];
+            drawChart(stats[1], stats[2].map(String));
+        }
+
+
+        async function drawChart(x, y) {
+            var data = [{
+                values: y,
+                labels: x,
+                type: "pie",
+                hovertemplate: "<b>%{label}</b><br>" + "%{value} MB<br>" + "%{percent}" + "<extra></extra>"
+            }];
+
+            var layout = {
+                title: "MB deleted per directory",
+                font: {
+                    size: 18,
+                    color: "white",
+                },
+                paper_bgcolor: "rgba(0,0,0,0)",
+                plot_bgcolor: "rgba(0,0,0,0)"
+            };
+            console.log(data);
+            var config = {responsive: true};
+            await Plotly.newPlot("pieChart", data, layout, config)
+        }
 
 
         function overlayFinished() {
@@ -64,21 +102,23 @@
         }
 
 
-        function closeError() {
-            var e = document.getElementById("error-overlay");
+        function closeInfo() {
+            var e = document.getElementById("info-overlay");
             e.parentElement.removeChild(e);
         }
 
 
-        function displayErrorOverlay(text) {
+        function displayInfoOverlay(text, heading, color) {
             var errorOverlay = document.createElement("div");
             errorOverlay.classList.add("overlay");
             errorOverlay.classList.add("overlay-dark");
             errorOverlay.classList.add("pure-g");
-            errorOverlay.id = "error-overlay";
-            errorOverlay.innerHTML = document.getElementById("error-overlay-template").innerHTML.replaceAll("{TEXT}", text);
-
+            errorOverlay.id = "info-overlay";
+            errorOverlay.innerHTML = document.getElementById("info-overlay-template").innerHTML.replaceAll("{TEXT}", text).replaceAll("{HEADING}", heading).replaceAll("{COLOR}", color);
             document.body.appendChild(errorOverlay);
+            if(heading == "Error") {
+                new Audio("/audio/Error.wav").play();
+            }
         }
 
 
@@ -112,8 +152,8 @@
         }
 
 
-        function triggerAlert(e) {
-            displayErrorOverlay(e);
+        function triggerAlert(e, heading, headingColor) {
+            displayInfoOverlay(e, heading, headingColor);
         }
 
 
@@ -202,11 +242,12 @@
 <body>
     <div class="pure-g wrapper">
         <div class="pure-u-1-1 pure-g menu-bar">
-            <div class="pure-u-1-3 menu-item">LOGO</div><!--
+            <div class="pure-u-1-3 menu-item" onclick="eel.open_repo()">LOGO</div><!--
             --><div class="pure-u-1-3 menu-item"><a href="/templates/clean.htm">&#128465; Delete Files</a></div><!--
             --><div class="pure-u-1-3 menu-item"><a href="/templates/stats.htm">&#128202; Stats</a></div>
         </div>
         {% block content %}{% endblock %}
     </div>
+    <script type="text/javascript" src="/plotly-latest.min.js"></script>
 </body>
 </html>
