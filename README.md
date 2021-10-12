@@ -39,7 +39,7 @@ pip install -r requirements.txt
 python BatchCleaner.py
 ```
 
-#### 5. When your done, deactivate your venv
+#### 5. When you're done, deactivate your venv
 ```sh
 deactivate
 ```
